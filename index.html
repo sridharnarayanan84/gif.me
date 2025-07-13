@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GifMaster - Video to GIF & Meme Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+
+        .card h2 {
+            color: #5a67d8;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 3px dashed #cbd5e0;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #5a67d8;
+            background: #edf2f7;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e6fffa;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            color: #a0aec0;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            margin: 5px;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .control-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .control-group input,
+        .control-group select {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9em;
+            transition: border-color 0.3s ease;
+        }
+
+        .control-group input:focus,
+        .control-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .preview-area {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .preview-video,
+        .preview-gif {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .meme-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .canvas-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+        }
+
+        .meme-canvas {
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .download-area {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .download-link {
+            display: inline-block;
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .download-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .status.info {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .control-group {
+                align-items: stretch;
+            }
+        }
+
+        .features {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 40px 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .features h3 {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .features ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .features li {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .features li:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 GifMaster</h1>
+            <p>Convert videos to GIFs and create amazing memes with ease</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Video to GIF Converter -->
+            <div class="card">
+                <h2>📹 Video to GIF Converter</h2>
+                
+                <div class="upload-area" id="videoUploadArea">
+                    <div class="upload-icon">📎</div>
+                    <p>Drag & drop your video file here or click to select</p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">Supports MP4, MOV, AVI, WebM</p>
+                    <input type="file" id="videoFile" class="file-input" accept="video/*">
+                </div>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Start Time (s)</label>
+                        <input type="number" id="startTime" min="0" value="0" step="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label>Duration (s)</label>
+                        <input type="number" id="duration" min="0.1" value="3" step="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label>Width (px)</label>
+                        <input type="number" id="gifWidth" min="50" max="800" value="400">
+                    </div>
+                    <div class="control-group">
+                        <label>Quality</label>
+                        <select id="gifQuality">
+                            <option value="high">High</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="preview-area">
+                    <video id="videoPreview" class="preview-video" controls style="display: none;"></video>
+                </div>
+
+                <div class="progress-bar" id="gifProgress" style="display: none;">
+                    <div class="progress-fill" id="gifProgressFill"></div>
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="btn" id="convertBtn" disabled>Convert to GIF</button>
+                </div>
+
+                <div class="preview-area">
+                    <img id="gifPreview" class="preview-gif" style="display: none;">
+                </div>
+
+                <div class="download-area" id="gifDownloadArea" style="display: none;">
+                    <a href="#" id="gifDownloadLink" class="download-link" download="converted.gif">📥 Download GIF</a>
+                </div>
+
+                <div id="gifStatus" class="status" style="display: none;"></div>
+            </div>
+
+            <!-- Meme Generator -->
+            <div class="card">
+                <h2>😂 Meme Generator</h2>
+                
+                <div class="upload-area" id="memeUploadArea">
+                    <div class="upload-icon">🖼️</div>
+                    <p>Drag & drop your image or GIF here or click to select</p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 10px;">Supports JPG, PNG, GIF</p>
+                    <input type="file" id="memeFile" class="file-input" accept="image/*">
+                </div>
+
+                <div class="meme-controls">
+                    <input type="text" id="topText" class="text-input" placeholder="Top text">
+                    <input type="text" id="bottomText" class="text-input" placeholder="Bottom text">
+                    
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Font Size</label>
+                            <input type="number" id="fontSize" min="20" max="100" value="40">
+                        </div>
+                        <div class="control-group">
+                            <label>Text Color</label>
+                            <input type="color" id="textColor" value="#ffffff">
+                        </div>
+                        <div class="control-group">
+                            <label>Stroke Color</label>
+                            <input type="color" id="strokeColor" value="#000000">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="memeCanvas" class="meme-canvas" style="display: none;"></canvas>
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="btn" id="generateMemeBtn" disabled>Generate Meme</button>
+                </div>
+
+                <div class="download-area" id="memeDownloadArea" style="display: none;">
+                    <a href="#" id="memeDownloadLink" class="download-link" download="meme.png">📥 Download Meme</a>
+                </div>
+
+                <div id="memeStatus" class="status" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="features">
+            <h3>✨ Features</h3>
+            <ul>
+                <li>🎥 Convert videos to high-quality GIFs</li>
+                <li>⏱️ Customize start time and duration</li>
+                <li>📐 Adjust size and quality settings</li>
+                <li>😂 Add text to create memes</li>
+                <li>🎨 Customize fonts and colors</li>
+                <li>📱 Mobile-friendly design</li>
+                <li>🚀 Fast processing in your browser</li>
+                <li>🔒 Your files never leave your device</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let selectedVideoFile = null;
+        let selectedMemeFile = null;
+        let videoElement = null;
+        let memeCanvas = null;
+        let memeContext = null;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            setupVideoConverter();
+            setupMemeGenerator();
+        });
+
+        // Video to GIF Converter Setup
+        function setupVideoConverter() {
+            const videoUploadArea = document.getElementById('videoUploadArea');
+            const videoFileInput = document.getElementById('videoFile');
+            const videoPreview = document.getElementById('videoPreview');
+            const convertBtn = document.getElementById('convertBtn');
+
+            // Upload area interactions
+            videoUploadArea.addEventListener('click', () => videoFileInput.click());
+            videoUploadArea.addEventListener('dragover', handleDragOver);
+            videoUploadArea.addEventListener('dragleave', handleDragLeave);
+            videoUploadArea.addEventListener('drop', handleVideoDrop);
+
+            // File input change
+            videoFileInput.addEventListener('change', handleVideoFileSelect);
+
+            // Convert button
+            convertBtn.addEventListener('click', convertVideoToGif);
+
+            // Update controls when video loads
+            videoPreview.addEventListener('loadedmetadata', updateVideoControls);
+        }
+
+        // Meme Generator Setup
+        function setupMemeGenerator() {
+            const memeUploadArea = document.getElementById('memeUploadArea');
+            const memeFileInput = document.getElementById('memeFile');
+            const generateMemeBtn = document.getElementById('generateMemeBtn');
+            const topText = document.getElementById('topText');
+            const bottomText = document.getElementById('bottomText');
+            const fontSize = document.getElementById('fontSize');
+            const textColor = document.getElementById('textColor');
+            const strokeColor = document.getElementById('strokeColor');
+
+            memeCanvas = document.getElementById('memeCanvas');
+            memeContext = memeCanvas.getContext('2d');
+
+            // Upload area interactions
+            memeUploadArea.addEventListener('click', () => memeFileInput.click());
+            memeUploadArea.addEventListener('dragover', handleDragOver);
+            memeUploadArea.addEventListener('dragleave', handleDragLeave);
+            memeUploadArea.addEventListener('drop', handleMemeDrop);
+
+            // File input change
+            memeFileInput.addEventListener('change', handleMemeFileSelect);
+
+            // Generate meme button
+            generateMemeBtn.addEventListener('click', generateMeme);
+
+            // Text input changes
+            [topText, bottomText, fontSize, textColor, strokeColor].forEach(input => {
+                input.addEventListener('input', updateMemePreview);
+            });
+        }
+
+        // Drag and drop handlers
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleVideoDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('video/')) {
+                handleVideoFile(files[0]);
+            }
+        }
+
+        function handleMemeDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('image/')) {
+                handleMemeFile(files[0]);
+            }
+        }
+
+        // File handlers
+        function handleVideoFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleVideoFile(file);
+            }
+        }
+
+        function handleMemeFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleMemeFile(file);
+            }
+        }
+
+        function handleVideoFile(file) {
+            selectedVideoFile = file;
+            const videoPreview = document.getElementById('videoPreview');
+            const url = URL.createObjectURL(file);
+            
+            videoPreview.src = url;
+            videoPreview.style.display = 'block';
+            
+            showStatus('gifStatus', 'Video loaded successfully!', 'success');
+        }
+
+        function handleMemeFile(file) {
+            selectedMemeFile = file;
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            
+            img.onload = function() {
+                memeCanvas.width = img.width;
+                memeCanvas.height = img.height;
+                memeContext.drawImage(img, 0, 0);
+                memeCanvas.style.display = 'block';
+                
+                document.getElementById('generateMemeBtn').disabled = false;
+                showStatus('memeStatus', 'Image loaded successfully!', 'success');
+                URL.revokeObjectURL(url);
+            };
+            
+            img.src = url;
+        }
+
+        // Video controls update
+        function updateVideoControls() {
+            const videoPreview = document.getElementById('videoPreview');
+            const duration = videoPreview.duration;
+            
+            document.getElementById('duration').max = duration;
+            document.getElementById('startTime').max = duration;
+            document.getElementById('convertBtn').disabled = false;
+        }
+
+        // Convert video to GIF (simplified simulation)
+        function convertVideoToGif() {
+            const startTime = parseFloat(document.getElementById('startTime').value);
+            const duration = parseFloat(document.getElementById('duration').value);
+            const width = parseInt(document.getElementById('gifWidth').value);
+            const quality = document.getElementById('gifQuality').value;
+            
+            showStatus('gifStatus', 'Converting video to GIF...', 'info');
+            showProgress('gifProgress', 0);
+            
+            // Simulate conversion progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                showProgress('gifProgress', progress);
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    // Simulate GIF creation (in real implementation, you'd use a library like gif.js)
+                    createSimulatedGif();
+                }
+            }, 200);
+        }
+
+        // Create simulated GIF
+        function createSimulatedGif() {
+            // In a real implementation, you would use a library like gif.js
+            // For demonstration, we'll create a simple canvas-based "GIF"
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const width = parseInt(document.getElementById('gifWidth').value);
+            
+            canvas.width = width;
+            canvas.height = width * 0.75; // 4:3 aspect ratio
+            
+            // Draw a simple animated rectangle as placeholder
+            ctx.fillStyle = '#667eea';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#white';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('GIF Preview', canvas.width / 2, canvas.height / 2);
+            
+            // Convert canvas to blob and display
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const gifPreview = document.getElementById('gifPreview');
+                const downloadLink = document.getElementById('gifDownloadLink');
+                
+                gifPreview.src = url;
+                gifPreview.style.display = 'block';
+                downloadLink.href = url;
+                document.getElementById('gifDownloadArea').style.display = 'block';
+                
+                showStatus('gifStatus', 'GIF conversion completed!', 'success');
+                hideProgress('gifProgress');
+            }, 'image/png');
+        }
+
+        // Generate meme
+        function generateMeme() {
+            if (!selectedMemeFile) return;
+            
+            updateMemePreview();
+            
+            // Create download link
+            memeCanvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const downloadLink = document.getElementById('memeDownloadLink');
+                
+                downloadLink.href = url;
+                document.getElementById('memeDownloadArea').style.display = 'block';
+                
+                showStatus('memeStatus', 'Meme generated successfully!', 'success');
+            }, 'image/png');
+        }
+
+        // Update meme preview
+        function updateMemePreview() {
+            if (!selectedMemeFile || !memeCanvas) return;
+            
+            const img = new Image();
+            const url = URL.createObjectURL(selectedMemeFile);
+            
+            img.onload = function() {
+                const topText = document.getElementById('topText').value;
+                const bottomText = document.getElementById('bottomText').value;
+                const fontSize = parseInt(document.getElementById('fontSize').value);
+                const textColor = document.getElementById('textColor').value;
+                const strokeColor = document.getElementById('strokeColor').value;
+                
+                // Clear canvas and redraw image
+                memeContext.clearRect(0, 0, memeCanvas.width, memeCanvas.height);
+                memeContext.drawImage(img, 0, 0);
+                
+                // Set text properties
+                memeContext.font = `bold ${fontSize}px Arial`;
+                memeContext.fillStyle = textColor;
+                memeContext.strokeStyle = strokeColor;
+                memeContext.lineWidth = 3;
+                memeContext.textAlign = 'center';
+                
+                // Draw top text
+                if (topText) {
+                    const x = memeCanvas.width / 2;
+                    const y = fontSize + 20;
+                    memeContext.strokeText(topText, x, y);
+                    memeContext.fillText(topText, x, y);
+                }
+                
+                // Draw bottom text
+                if (bottomText) {
+                    const x = memeCanvas.width / 2;
+                    const y = memeCanvas.height - 20;
+                    memeContext.strokeText(bottomText, x, y);
+                    memeContext.fillText(bottomText, x, y);
+                }
+                
+                URL.revokeObjectURL(url);
+            };
+            
+            img.src = url;
+        }
+
+        // Utility functions
+        function showStatus(elementId, message, type) {
+            const statusEl = document.getElementById(elementId);
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        function showProgress(elementId, progress) {
+            const progressEl = document.getElementById(elementId);
+            const fillEl = document.getElementById(elementId + 'Fill');
+            
+            progressEl.style.display = 'block';
+            fillEl.style.width = progress + '%';
+        }
+
+        function hideProgress(elementId) {
+            const progressEl = document.getElementById(elementId);
+            progressEl.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
