@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GifMaster - Video to GIF & Meme Generator</title>
+    <title>GifCraft - Video to GIF & Meme Generator</title>
     <style>
         * {
             margin: 0;
@@ -220,6 +220,7 @@
         .meme-canvas {
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 100%;
         }
 
         .download-area {
@@ -287,48 +288,15 @@
             }
         }
 
-        .features {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 30px;
-            margin: 40px 0;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .features h3 {
-            color: white;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-
-        .features ul {
-            list-style: none;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-
-        .features li {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            color: white;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .features li:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎬 GifMaster</h1>
+            <h1>🎬 GifCraft</h1>
             <p>Convert videos to GIFs and create amazing memes with ease</p>
         </div>
 
@@ -351,18 +319,22 @@
                     </div>
                     <div class="control-group">
                         <label>Duration (s)</label>
-                        <input type="number" id="duration" min="0.1" value="3" step="0.1">
+                        <input type="number" id="duration" min="0.1" value="3" step="0.1" max="10">
                     </div>
                     <div class="control-group">
-                        <label>Width (px)</label>
-                        <input type="number" id="gifWidth" min="50" max="800" value="400">
+                        <label>Size</label>
+                        <select id="gifSize">
+                            <option value="320">Small (320px)</option>
+                            <option value="480" selected>Medium (480px)</option>
+                            <option value="640">Large (640px)</option>
+                        </select>
                     </div>
                     <div class="control-group">
-                        <label>Quality</label>
-                        <select id="gifQuality">
-                            <option value="high">High</option>
-                            <option value="medium" selected>Medium</option>
-                            <option value="low">Low</option>
+                        <label>Frame Rate</label>
+                        <select id="frameRate">
+                            <option value="10">10 FPS</option>
+                            <option value="15" selected>15 FPS</option>
+                            <option value="20">20 FPS</option>
                         </select>
                     </div>
                 </div>
@@ -371,7 +343,7 @@
                     <video id="videoPreview" class="preview-video" controls style="display: none;"></video>
                 </div>
 
-                <div class="progress-bar" id="gifProgress" style="display: none;">
+                <div class="progress-bar hidden" id="gifProgress">
                     <div class="progress-fill" id="gifProgressFill"></div>
                 </div>
 
@@ -383,11 +355,11 @@
                     <img id="gifPreview" class="preview-gif" style="display: none;">
                 </div>
 
-                <div class="download-area" id="gifDownloadArea" style="display: none;">
+                <div class="download-area hidden" id="gifDownloadArea">
                     <a href="#" id="gifDownloadLink" class="download-link" download="converted.gif">📥 Download GIF</a>
                 </div>
 
-                <div id="gifStatus" class="status" style="display: none;"></div>
+                <div id="gifStatus" class="status hidden"></div>
             </div>
 
             <!-- Meme Generator -->
@@ -396,7 +368,7 @@
                 
                 <div class="upload-area" id="memeUploadArea">
                     <div class="upload-icon">🖼️</div>
-                    <p>Drag & drop your image or GIF here or click to select</p>
+                    <p>Drag & drop your image here or click to select</p>
                     <p style="font-size: 0.9em; color: #666; margin-top: 10px;">Supports JPG, PNG, GIF</p>
                     <input type="file" id="memeFile" class="file-input" accept="image/*">
                 </div>
@@ -408,14 +380,14 @@
                     <div class="controls">
                         <div class="control-group">
                             <label>Font Size</label>
-                            <input type="number" id="fontSize" min="20" max="100" value="40">
+                            <input type="range" id="fontSize" min="20" max="80" value="40">
                         </div>
                         <div class="control-group">
                             <label>Text Color</label>
                             <input type="color" id="textColor" value="#ffffff">
                         </div>
                         <div class="control-group">
-                            <label>Stroke Color</label>
+                            <label>Outline Color</label>
                             <input type="color" id="strokeColor" value="#000000">
                         </div>
                     </div>
@@ -425,40 +397,26 @@
                     <canvas id="memeCanvas" class="meme-canvas" style="display: none;"></canvas>
                 </div>
 
-                <div style="text-align: center;">
-                    <button class="btn" id="generateMemeBtn" disabled>Generate Meme</button>
-                </div>
-
-                <div class="download-area" id="memeDownloadArea" style="display: none;">
+                <div class="download-area hidden" id="memeDownloadArea">
                     <a href="#" id="memeDownloadLink" class="download-link" download="meme.png">📥 Download Meme</a>
                 </div>
 
-                <div id="memeStatus" class="status" style="display: none;"></div>
+                <div id="memeStatus" class="status hidden"></div>
             </div>
-        </div>
-
-        <div class="features">
-            <h3>✨ Features</h3>
-            <ul>
-                <li>🎥 Convert videos to high-quality GIFs</li>
-                <li>⏱️ Customize start time and duration</li>
-                <li>📐 Adjust size and quality settings</li>
-                <li>😂 Add text to create memes</li>
-                <li>🎨 Customize fonts and colors</li>
-                <li>📱 Mobile-friendly design</li>
-                <li>🚀 Fast processing in your browser</li>
-                <li>🔒 Your files never leave your device</li>
-            </ul>
         </div>
     </div>
 
+    <!-- Include gif.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.min.js"></script>
+    
     <script>
         // Global variables
         let selectedVideoFile = null;
         let selectedMemeFile = null;
-        let videoElement = null;
+        let currentVideo = null;
         let memeCanvas = null;
         let memeContext = null;
+        let currentMemeImage = null;
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
@@ -493,7 +451,6 @@
         function setupMemeGenerator() {
             const memeUploadArea = document.getElementById('memeUploadArea');
             const memeFileInput = document.getElementById('memeFile');
-            const generateMemeBtn = document.getElementById('generateMemeBtn');
             const topText = document.getElementById('topText');
             const bottomText = document.getElementById('bottomText');
             const fontSize = document.getElementById('fontSize');
@@ -511,9 +468,6 @@
 
             // File input change
             memeFileInput.addEventListener('change', handleMemeFileSelect);
-
-            // Generate meme button
-            generateMemeBtn.addEventListener('click', generateMeme);
 
             // Text input changes
             [topText, bottomText, fontSize, textColor, strokeColor].forEach(input => {
@@ -552,42 +506,74 @@
         // File handlers
         function handleVideoFileSelect(e) {
             const file = e.target.files[0];
-            if (file) {
+            if (file && file.type.startsWith('video/')) {
                 handleVideoFile(file);
+            } else {
+                showStatus('gifStatus', 'Please select a valid video file', 'error');
             }
         }
 
         function handleMemeFileSelect(e) {
             const file = e.target.files[0];
-            if (file) {
+            if (file && file.type.startsWith('image/')) {
                 handleMemeFile(file);
+            } else {
+                showStatus('memeStatus', 'Please select a valid image file', 'error');
             }
         }
 
         function handleVideoFile(file) {
             selectedVideoFile = file;
             const videoPreview = document.getElementById('videoPreview');
-            const url = URL.createObjectURL(file);
             
+            // Revoke previous URL if exists
+            if (videoPreview.src) {
+                URL.revokeObjectURL(videoPreview.src);
+            }
+            
+            const url = URL.createObjectURL(file);
             videoPreview.src = url;
             videoPreview.style.display = 'block';
+            currentVideo = videoPreview;
             
-            showStatus('gifStatus', 'Video loaded successfully!', 'success');
+            showStatus('gifStatus', 'Video loaded successfully! Adjust settings and click Convert.', 'success');
         }
 
         function handleMemeFile(file) {
             selectedMemeFile = file;
             const img = new Image();
+            
+            // Revoke previous URL if exists
+            if (currentMemeImage && currentMemeImage.src) {
+                URL.revokeObjectURL(currentMemeImage.src);
+            }
+            
             const url = URL.createObjectURL(file);
             
             img.onload = function() {
-                memeCanvas.width = img.width;
-                memeCanvas.height = img.height;
-                memeContext.drawImage(img, 0, 0);
+                // Set canvas dimensions to match image
+                const maxWidth = 600;
+                const maxHeight = 600;
+                let { width, height } = img;
+                
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width *= ratio;
+                    height *= ratio;
+                }
+                
+                memeCanvas.width = width;
+                memeCanvas.height = height;
                 memeCanvas.style.display = 'block';
                 
-                document.getElementById('generateMemeBtn').disabled = false;
+                currentMemeImage = img;
+                updateMemePreview();
+                
                 showStatus('memeStatus', 'Image loaded successfully!', 'success');
+            };
+            
+            img.onerror = function() {
+                showStatus('memeStatus', 'Error loading image. Please try a different file.', 'error');
                 URL.revokeObjectURL(url);
             };
             
@@ -599,56 +585,95 @@
             const videoPreview = document.getElementById('videoPreview');
             const duration = videoPreview.duration;
             
-            document.getElementById('duration').max = duration;
-            document.getElementById('startTime').max = duration;
-            document.getElementById('convertBtn').disabled = false;
+            if (duration && !isNaN(duration)) {
+                const durationInput = document.getElementById('duration');
+                const startTimeInput = document.getElementById('startTime');
+                
+                durationInput.max = Math.min(duration, 10); // Cap at 10 seconds
+                startTimeInput.max = duration - 0.1;
+                
+                // Adjust duration if it exceeds video length
+                if (parseFloat(durationInput.value) > duration) {
+                    durationInput.value = Math.min(duration, 3);
+                }
+                
+                document.getElementById('convertBtn').disabled = false;
+            }
         }
 
-        // Convert video to GIF (simplified simulation)
+        // Convert video to GIF
         function convertVideoToGif() {
+            if (!selectedVideoFile || !currentVideo) {
+                showStatus('gifStatus', 'Please select a video file first', 'error');
+                return;
+            }
+
             const startTime = parseFloat(document.getElementById('startTime').value);
             const duration = parseFloat(document.getElementById('duration').value);
-            const width = parseInt(document.getElementById('gifWidth').value);
-            const quality = document.getElementById('gifQuality').value;
+            const size = parseInt(document.getElementById('gifSize').value);
+            const frameRate = parseInt(document.getElementById('frameRate').value);
             
+            // Validate inputs
+            if (startTime + duration > currentVideo.duration) {
+                showStatus('gifStatus', 'Start time + duration exceeds video length', 'error');
+                return;
+            }
+
             showStatus('gifStatus', 'Converting video to GIF...', 'info');
             showProgress('gifProgress', 0);
-            
-            // Simulate conversion progress
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 10;
-                showProgress('gifProgress', progress);
-                
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    // Simulate GIF creation (in real implementation, you'd use a library like gif.js)
-                    createSimulatedGif();
-                }
-            }, 200);
-        }
 
-        // Create simulated GIF
-        function createSimulatedGif() {
-            // In a real implementation, you would use a library like gif.js
-            // For demonstration, we'll create a simple canvas-based "GIF"
+            // Create canvas for frame capture
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            const width = parseInt(document.getElementById('gifWidth').value);
             
-            canvas.width = width;
-            canvas.height = width * 0.75; // 4:3 aspect ratio
-            
-            // Draw a simple animated rectangle as placeholder
-            ctx.fillStyle = '#667eea';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#white';
-            ctx.font = '20px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('GIF Preview', canvas.width / 2, canvas.height / 2);
-            
-            // Convert canvas to blob and display
-            canvas.toBlob((blob) => {
+            // Calculate canvas size maintaining aspect ratio
+            const aspectRatio = currentVideo.videoWidth / currentVideo.videoHeight;
+            canvas.width = size;
+            canvas.height = size / aspectRatio;
+
+            // Initialize GIF generator
+            const gif = new GIF({
+                workers: 2,
+                quality: 10,
+                width: canvas.width,
+                height: canvas.height,
+                workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+            });
+
+            let frameCount = 0;
+            const totalFrames = Math.ceil(duration * frameRate);
+            const frameInterval = 1000 / frameRate;
+
+            function captureFrame() {
+                if (frameCount >= totalFrames) {
+                    // Render GIF
+                    gif.render();
+                    return;
+                }
+
+                const currentTime = startTime + (frameCount / frameRate);
+                currentVideo.currentTime = currentTime;
+
+                currentVideo.addEventListener('seeked', function onSeeked() {
+                    currentVideo.removeEventListener('seeked', onSeeked);
+                    
+                    // Draw frame to canvas
+                    ctx.drawImage(currentVideo, 0, 0, canvas.width, canvas.height);
+                    
+                    // Add frame to GIF
+                    gif.addFrame(canvas, { delay: frameInterval });
+                    
+                    frameCount++;
+                    const progress = (frameCount / totalFrames) * 90; // 90% for capture, 10% for rendering
+                    showProgress('gifProgress', progress);
+                    
+                    // Capture next frame
+                    setTimeout(captureFrame, 50);
+                });
+            }
+
+            // Handle GIF rendering completion
+            gif.on('finished', function(blob) {
                 const url = URL.createObjectURL(blob);
                 const gifPreview = document.getElementById('gifPreview');
                 const downloadLink = document.getElementById('gifDownloadLink');
@@ -656,76 +681,78 @@
                 gifPreview.src = url;
                 gifPreview.style.display = 'block';
                 downloadLink.href = url;
-                document.getElementById('gifDownloadArea').style.display = 'block';
                 
+                document.getElementById('gifDownloadArea').classList.remove('hidden');
                 showStatus('gifStatus', 'GIF conversion completed!', 'success');
-                hideProgress('gifProgress');
-            }, 'image/png');
-        }
+                showProgress('gifProgress', 100);
+                
+                setTimeout(() => {
+                    document.getElementById('gifProgress').classList.add('hidden');
+                }, 1000);
+            });
 
-        // Generate meme
-        function generateMeme() {
-            if (!selectedMemeFile) return;
-            
-            updateMemePreview();
-            
-            // Create download link
-            memeCanvas.toBlob((blob) => {
-                const url = URL.createObjectURL(blob);
-                const downloadLink = document.getElementById('memeDownloadLink');
-                
-                downloadLink.href = url;
-                document.getElementById('memeDownloadArea').style.display = 'block';
-                
-                showStatus('memeStatus', 'Meme generated successfully!', 'success');
-            }, 'image/png');
+            gif.on('progress', function(p) {
+                const progress = 90 + (p * 10); // Last 10% for rendering
+                showProgress('gifProgress', progress);
+            });
+
+            // Start capturing frames
+            captureFrame();
         }
 
         // Update meme preview
         function updateMemePreview() {
-            if (!selectedMemeFile || !memeCanvas) return;
+            if (!currentMemeImage || !memeCanvas) return;
             
-            const img = new Image();
-            const url = URL.createObjectURL(selectedMemeFile);
+            const topText = document.getElementById('topText').value.toUpperCase();
+            const bottomText = document.getElementById('bottomText').value.toUpperCase();
+            const fontSize = parseInt(document.getElementById('fontSize').value);
+            const textColor = document.getElementById('textColor').value;
+            const strokeColor = document.getElementById('strokeColor').value;
             
-            img.onload = function() {
-                const topText = document.getElementById('topText').value;
-                const bottomText = document.getElementById('bottomText').value;
-                const fontSize = parseInt(document.getElementById('fontSize').value);
-                const textColor = document.getElementById('textColor').value;
-                const strokeColor = document.getElementById('strokeColor').value;
-                
-                // Clear canvas and redraw image
-                memeContext.clearRect(0, 0, memeCanvas.width, memeCanvas.height);
-                memeContext.drawImage(img, 0, 0);
-                
-                // Set text properties
-                memeContext.font = `bold ${fontSize}px Arial`;
-                memeContext.fillStyle = textColor;
-                memeContext.strokeStyle = strokeColor;
-                memeContext.lineWidth = 3;
-                memeContext.textAlign = 'center';
-                
-                // Draw top text
-                if (topText) {
-                    const x = memeCanvas.width / 2;
-                    const y = fontSize + 20;
-                    memeContext.strokeText(topText, x, y);
-                    memeContext.fillText(topText, x, y);
+            // Clear canvas and redraw image
+            memeContext.clearRect(0, 0, memeCanvas.width, memeCanvas.height);
+            memeContext.drawImage(currentMemeImage, 0, 0, memeCanvas.width, memeCanvas.height);
+            
+            // Set text properties
+            memeContext.font = `bold ${fontSize}px Arial`;
+            memeContext.fillStyle = textColor;
+            memeContext.strokeStyle = strokeColor;
+            memeContext.lineWidth = 3;
+            memeContext.textAlign = 'center';
+            memeContext.textBaseline = 'middle';
+            
+            // Draw top text
+            if (topText) {
+                const x = memeCanvas.width / 2;
+                const y = fontSize + 20;
+                memeContext.strokeText(topText, x, y);
+                memeContext.fillText(topText, x, y);
+            }
+            
+            // Draw bottom text
+            if (bottomText) {
+                const x = memeCanvas.width / 2;
+                const y = memeCanvas.height - 20;
+                memeContext.strokeText(bottomText, x, y);
+                memeContext.fillText(bottomText, x, y);
+            }
+            
+            // Create download link
+            memeCanvas.toBlob((blob) => {
+                if (blob) {
+                    const url = URL.createObjectURL(blob);
+                    const downloadLink = document.getElementById('memeDownloadLink');
+                    
+                    // Revoke previous URL
+                    if (downloadLink.href && downloadLink.href.startsWith('blob:')) {
+                        URL.revokeObjectURL(downloadLink.href);
+                    }
+                    
+                    downloadLink.href = url;
+                    document.getElementById('memeDownloadArea').classList.remove('hidden');
                 }
-                
-                // Draw bottom text
-                if (bottomText) {
-                    const x = memeCanvas.width / 2;
-                    const y = memeCanvas.height - 20;
-                    memeContext.strokeText(bottomText, x, y);
-                    memeContext.fillText(bottomText, x, y);
-                }
-                
-                URL.revokeObjectURL(url);
-            };
-            
-            img.src = url;
+            }, 'image/png');
         }
 
         // Utility functions
@@ -733,11 +760,11 @@
             const statusEl = document.getElementById(elementId);
             statusEl.textContent = message;
             statusEl.className = `status ${type}`;
-            statusEl.style.display = 'block';
+            statusEl.classList.remove('hidden');
             
             if (type === 'success') {
                 setTimeout(() => {
-                    statusEl.style.display = 'none';
+                    statusEl.classList.add('hidden');
                 }, 3000);
             }
         }
@@ -746,13 +773,8 @@
             const progressEl = document.getElementById(elementId);
             const fillEl = document.getElementById(elementId + 'Fill');
             
-            progressEl.style.display = 'block';
-            fillEl.style.width = progress + '%';
-        }
-
-        function hideProgress(elementId) {
-            const progressEl = document.getElementById(elementId);
-            progressEl.style.display = 'none';
+            progressEl.classList.remove('hidden');
+            fillEl.style.width = Math.min(progress, 100) + '%';
         }
     </script>
 </body>
